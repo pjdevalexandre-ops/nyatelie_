@@ -17,6 +17,7 @@ export interface Product {
   name: string;
   description: string;
   imageUrl: string;
+  category?: string;
   variations: Variation[];
 }
 
