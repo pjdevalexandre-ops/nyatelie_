@@ -24,6 +24,9 @@ export interface UserProfile {
   role: "customer" | "admin";
 }
 
+// Alias para compatibilidade
+export type CustomerData = UserProfile;
+
 interface AuthContextType {
   user: UserProfile | null;
   login: (phone: string, name?: string, address?: Partial<UserProfile>) => void;
@@ -37,6 +40,8 @@ interface AuthContextType {
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  customerData: UserProfile | null;
+  saveCustomerData: (data: UserProfile) => void;
 }
 
 const defaultContext: AuthContextType = {
@@ -52,6 +57,8 @@ const defaultContext: AuthContextType = {
   totalPrice: 0,
   isCartOpen: false,
   setIsCartOpen: () => {},
+  customerData: null,
+  saveCustomerData: () => {},
 };
 
 const CartContext = createContext<AuthContextType>(defaultContext);
@@ -118,6 +125,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("nyatelie_user");
   };
 
+  const saveCustomerData = (data: UserProfile) => {
+    setUser(data);
+  };
+
   const addItem = (product: Product, variation: Variation, quantity = 1) => {
     setItems((prev) => {
       const cartItemId = `${product.id}-${variation.id || variation.size}`;
@@ -174,6 +185,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalPrice,
         isCartOpen,
         setIsCartOpen,
+        customerData: user,
+        saveCustomerData,
       }}
     >
       {children}
