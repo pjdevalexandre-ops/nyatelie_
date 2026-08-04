@@ -15,7 +15,7 @@ export async function PUT(
 
   try {
     const data = await request.json();
-    const { name, description, imageUrl, variations } = data;
+    const { name, description, imageUrl, category, variations } = data;
 
     await prisma.product.update({
       where: { id },
@@ -23,6 +23,7 @@ export async function PUT(
         name: String(name).trim(),
         description: String(description).trim(),
         imageUrl: String(imageUrl).trim(),
+        category: category ? String(category).trim() : "Geral",
       },
     });
 
@@ -35,7 +36,7 @@ export async function PUT(
         data: variations.map((v: { size: string; price: number; imageUrl?: string }) => ({
           productId: id,
           size: String(v.size || "Tamanho Único").trim(),
-          price: Number(v.price) || 0,
+          price: Math.max(0, parseFloat(String(v.price).replace(",", ".")) || 0),
           imageUrl: v.imageUrl ? String(v.imageUrl).trim() : null,
         })),
       });

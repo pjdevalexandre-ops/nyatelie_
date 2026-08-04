@@ -35,6 +35,7 @@ interface Product {
   name: string;
   description: string;
   imageUrl: string;
+  category?: string;
   position: number;
   variations: Variation[];
 }
@@ -44,6 +45,8 @@ interface Settings {
   heroTitle: string;
   heroSubtitle: string;
 }
+
+const CATEGORIES = ["Mesa Posta", "Bolsas & Acessórios", "Decoração", "Vestuário", "Geral"];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<"products" | "settings">("products");
@@ -63,6 +66,7 @@ export default function AdminDashboard() {
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
+  const [formCategory, setFormCategory] = useState("Mesa Posta");
   const [formVariations, setFormVariations] = useState<{ size: string; price: number; imageUrl?: string }[]>([
     { size: "Tamanho Único", price: 50 },
   ]);
@@ -155,6 +159,7 @@ export default function AdminDashboard() {
     setFormName("");
     setFormDescription("");
     setFormImageUrl("");
+    setFormCategory("Mesa Posta");
     setFormVariations([{ size: "Tamanho Único", price: 50 }]);
     setIsModalOpen(true);
   };
@@ -164,6 +169,7 @@ export default function AdminDashboard() {
     setFormName(product.name);
     setFormDescription(product.description);
     setFormImageUrl(product.imageUrl);
+    setFormCategory(product.category || "Mesa Posta");
     setFormVariations(
       product.variations.map((v) => ({
         size: v.size,
@@ -195,6 +201,7 @@ export default function AdminDashboard() {
       name: formName.trim(),
       description: formDescription.trim(),
       imageUrl: formImageUrl.trim(),
+      category: formCategory,
       variations: formVariations.map((v) => ({
         size: v.size.trim() || "Tamanho Único",
         price: Number(v.price) || 0,
@@ -313,7 +320,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F6FAFD] text-[#4A6B82]">
         <Loader2 className="w-8 h-8 animate-spin text-[#38A9E4] mr-2" />
-        <span>Carregando painel da NyAtelie...</span>
+        <span>Carregando painel da NyAteliê...</span>
       </div>
     );
   }
@@ -323,7 +330,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex flex-col bg-[#F6FAFD]">
         <Header isAdmin />
 
-        {/* Notificações Visuais de Confirmação no Topo com Maior Destaque */}
+        {/* Notificações Visuais de Confirmação no Topo */}
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 flex flex-col gap-2 pointer-events-none">
           {saveMessage && (
             <div className="pointer-events-auto bg-[#4A6B52] text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-white flex items-center justify-between gap-3 text-sm font-semibold animate-bounce">
@@ -356,10 +363,10 @@ export default function AdminDashboard() {
                 Painel de Gestão
               </span>
               <h1 className="font-serif-craft text-2xl sm:text-3xl font-bold text-[#1A364A]">
-                Bem-vinda, NyAtelie!
+                Bem-vinda, NyAteliê!
               </h1>
               <p className="text-xs sm:text-sm text-[#4A6B82] mt-1">
-                Gerencie suas peças de crochê, variações de preço e dados da loja em tempo real.
+                Gerencie suas peças de crochê, categorias, valores e dados da loja em tempo real.
               </p>
             </div>
 
@@ -441,10 +448,15 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                          <h3 className="font-serif-craft font-bold text-base text-[#1A364A]">
-                            {product.name}
-                          </h3>
-                          <p className="text-xs text-[#4A6B82] line-clamp-1 max-w-md">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-serif-craft font-bold text-base text-[#1A364A]">
+                              {product.name}
+                            </h3>
+                            <span className="text-[10px] uppercase font-bold text-[#38A9E4] bg-[#EBF3FA] px-2 py-0.5 rounded-full border border-[#CBE3F5]">
+                              {product.category || "Geral"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#4A6B82] line-clamp-1 max-w-md mt-0.5">
                             {product.description}
                           </p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -633,6 +645,23 @@ export default function AdminDashboard() {
                     required
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-sm text-[#1A364A]"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#1A364A] uppercase tracking-wider mb-1.5">
+                    Categoria da Peça
+                  </label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-sm text-[#1A364A]"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>

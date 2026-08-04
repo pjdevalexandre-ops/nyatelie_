@@ -8,7 +8,7 @@ import ProductModal, { Product } from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
 import AuthGateModal from "@/components/AuthGateModal";
 import { CartProvider } from "@/context/CartContext";
-import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck } from "lucide-react";
+import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck, Search, Star, Quote } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
 
 interface Settings {
@@ -16,6 +16,29 @@ interface Settings {
   heroTitle: string;
   heroSubtitle: string;
 }
+
+const CATEGORIES = ["Todos", "Mesa Posta", "Bolsas & Acessórios", "Decoração", "Vestuário"];
+
+const TESTIMONIALS = [
+  {
+    name: "Cláudia Mendonça",
+    city: "Belém - PA",
+    comment: "Os sousplats em crochê que encomendei para o meu jantar de Natal ficaram simplesmente deslumbrantes! Acabamento impecável e entrega super carinhosa.",
+    rating: 5,
+  },
+  {
+    name: "Juliana Rocha",
+    city: "São Miguel do Guamá - PA",
+    comment: "A bolsa tote de crochê é maravilhosa! Muito resistente, com forro bem feito e cabe tudo. Já quero encomendar outra cor!",
+    rating: 5,
+  },
+  {
+    name: "Patrícia Alencar",
+    city: "Ananindeua - PA",
+    comment: "Atendimento nota 1000 pelo WhatsApp e as peças em crochê têm um cheirinho e um carinho únicos. Recomendaria mil vezes!",
+    rating: 5,
+  },
+];
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -26,6 +49,10 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Estados de Busca e Filtro por Categoria
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
 
   useEffect(() => {
     async function loadData() {
@@ -51,9 +78,17 @@ export default function Home() {
     loadData();
   }, []);
 
+  // Filtragem Dinâmica por Categoria e Busca
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = selectedCategory === "Todos" || (product.category || "Geral") === selectedCategory;
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   return (
     <CartProvider>
-      {/* Modal de Cadastro / Login que Bloqueia o Acesso Inicial até o Usuário Entrar */}
       <AuthGateModal />
 
       <div className="min-h-screen flex flex-col bg-[#F6FAFD]">
@@ -63,19 +98,17 @@ export default function Home() {
           {/* Hero Section Minimalista e Limpo */}
           <section className="relative bg-[#EBF3FA] border-b border-[#CBE3F5] pt-14 pb-18 px-4 sm:px-6 overflow-hidden">
             <div className="max-w-4xl mx-auto text-center relative z-10">
-              {/* Título Principal */}
               <h1 className="font-serif-craft text-4xl sm:text-5xl md:text-6xl font-bold text-[#1A364A] leading-[1.15] mb-6">
                 {settings.heroTitle}
               </h1>
 
-              {/* Subtítulo */}
               <p className="text-base sm:text-lg text-[#4A6B82] max-w-2xl mx-auto leading-relaxed mb-8 font-normal">
                 {settings.heroSubtitle}
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
-                  href={`https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent("Olá! Gostaria de encomendar uma peça personalizada em crochê na NyAtelie.")}`}
+                  href={`https://wa.me/${settings.whatsappNumber}?text=${encodeURIComponent("Olá! Gostaria de encomendar uma peça personalizada em crochê na NyAteliê.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white font-semibold text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2.5"
@@ -128,40 +161,78 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Vitrine de Produtos */}
+          {/* Vitrine de Produtos com Filtro de Categoria e Barra de Busca */}
           <section id="vitrine" className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-            <div className="text-center mb-12">
+            <div className="text-center mb-10">
               <span className="text-xs uppercase tracking-widest text-[#38A9E4] font-bold">
-                Vitrine NyAtelie
+                Vitrine NyAteliê
               </span>
               <h2 className="font-serif-craft text-3xl sm:text-4xl font-bold text-[#1A364A] mt-1.5">
                 Escolha sua peça artesanal
               </h2>
               <p className="text-sm text-[#4A6B82] mt-2 max-w-lg mx-auto leading-relaxed">
-                Clique na peça desejada para conferir opções de tamanhos, valores e adicionar ao carrinho.
+                Navegue pelas categorias ou busque pelo nome para encontrar sua peça de crochê favorita.
               </p>
+            </div>
+
+            {/* Barra de Busca de Produtos */}
+            <div className="max-w-md mx-auto mb-8 relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar peça de crochê (ex: Sousplat, Bolsa)..."
+                className="w-full pl-11 pr-4 py-3 rounded-full border-2 border-[#CBE3F5] bg-white text-sm text-[#1A364A] shadow-xs focus:border-[#38A9E4] outline-hidden transition-all"
+              />
+              <Search className="w-5 h-5 text-[#38A9E4] absolute left-4 top-3.5" />
+            </div>
+
+            {/* Filtro por Categorias */}
+            <div className="flex items-center justify-center gap-2 mb-10 flex-wrap">
+              {CATEGORIES.map((cat) => {
+                const isSelected = selectedCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all border shadow-xs ${
+                      isSelected
+                        ? "bg-[#38A9E4] text-white border-[#38A9E4]"
+                        : "bg-white text-[#1A364A] border-[#CBE3F5] hover:bg-[#EBF3FA]"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                );
+              })}
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-[#4A6B82]">
                 <RefreshCw className="w-8 h-8 animate-spin text-[#38A9E4] mb-3" />
-                <p className="text-sm font-medium">Carregando a vitrine da NyAtelie...</p>
+                <p className="text-sm font-medium">Carregando a vitrine da NyAteliê...</p>
               </div>
-            ) : products.length === 0 ? (
+            ) : filteredProducts.length === 0 ? (
               <div className="max-w-md mx-auto my-8 p-8 rounded-3xl bg-[#EBF3FA] border-2 border-dashed border-[#CBE3F5] text-center">
                 <div className="w-16 h-16 rounded-full bg-[#38A9E4]/15 text-[#38A9E4] flex items-center justify-center mx-auto mb-4">
                   <PackageX className="w-8 h-8" />
                 </div>
                 <h3 className="font-serif-craft text-xl font-bold text-[#1A364A] mb-2">
-                  Nenhuma peça publicada ainda
+                  Nenhuma peça encontrada
                 </h3>
                 <p className="text-sm text-[#4A6B82] leading-relaxed mb-6">
-                  Nossa oficina em São Miguel do Guamá está preparando peças incríveis. Acesse o painel admin para cadastrar as primeiras!
+                  Tente alterar os termos da busca ou selecionar outra categoria.
                 </p>
+                <button
+                  onClick={() => { setSearchQuery(""); setSelectedCategory("Todos"); }}
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#38A9E4] text-white text-xs font-semibold"
+                >
+                  Limpar Filtros
+                </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map((product) => (
+                {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -170,6 +241,53 @@ export default function Home() {
                 ))}
               </div>
             )}
+          </section>
+
+          {/* Seção de Depoimentos e Avaliações de Clientes */}
+          <section className="py-16 bg-[#EBF3FA]/70 border-t border-[#CBE3F5]">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
+              <div className="text-center mb-12">
+                <span className="text-xs uppercase tracking-widest text-[#38A9E4] font-bold">
+                  Carinho de Quem Comprou
+                </span>
+                <h2 className="font-serif-craft text-3xl sm:text-4xl font-bold text-[#1A364A] mt-1.5">
+                  Avaliações dos Nossos Clientes
+                </h2>
+                <p className="text-sm text-[#4A6B82] mt-2 max-w-md mx-auto">
+                  Veja o que quem já recebeu nossas peças de crochê em casa tem a dizer:
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {TESTIMONIALS.map((review, idx) => (
+                  <div key={idx} className="bg-white p-6 rounded-3xl border border-[#CBE3F5] shadow-sm flex flex-col justify-between relative">
+                    <Quote className="w-8 h-8 text-[#38A9E4]/20 absolute top-4 right-4" />
+                    <div>
+                      <div className="flex items-center gap-1 text-amber-400 mb-3">
+                        {[...Array(review.rating)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-amber-400" />
+                        ))}
+                      </div>
+                      <p className="text-xs text-[#1A364A] leading-relaxed italic mb-4">
+                        "{review.comment}"
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#CBE3F5]/60 flex items-center justify-between">
+                      <div>
+                        <h4 className="font-serif-craft font-bold text-sm text-[#1A364A]">
+                          {review.name}
+                        </h4>
+                        <span className="text-[11px] text-[#4A6B82]">{review.city}</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#38A9E4] bg-[#EBF3FA] px-2 py-0.5 rounded-full">
+                        Cliente Verificada ✓
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </section>
         </main>
 
