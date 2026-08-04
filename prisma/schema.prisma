@@ -31,7 +31,7 @@ model ProductVariation {
 
 model StoreSettings {
   id             String   @id @default("default")
-  whatsappNumber String   @default("5591999999999")
+  whatsappNumber String   @default("5591984829252")
   heroTitle      String   @default("Peças únicas em crochê, feitas com carinho & afeto")
   heroSubtitle   String   @default("Cada ponto carrega dedicação e história. Feitas sob encomenda para transformar seu lar ou presentear quem você ama.")
   adminPassword  String   @default("$2a$10$w8V0r9pE.g1Q9B4S1cZ2eeX7N5V0x.X1zJ4c7.N5q3G1y8Z1xJ4c7")

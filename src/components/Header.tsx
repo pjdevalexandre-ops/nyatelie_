@@ -11,7 +11,7 @@ interface HeaderProps {
   isAdmin?: boolean;
 }
 
-export default function Header({ whatsappNumber = "5591999999999", isAdmin = false }: HeaderProps) {
+export default function Header({ whatsappNumber = "5591984829252", isAdmin = false }: HeaderProps) {
   const { totalItems, setIsCartOpen } = useCart();
 
   return (
