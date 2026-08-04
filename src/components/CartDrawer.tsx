@@ -92,6 +92,7 @@ export default function CartDrawer({ whatsappNumber }: CartDrawerProps) {
       neighborhood: neighborhood.trim(),
       city: city.trim(),
       uf: uf.trim(),
+      role: customerData?.role || "customer",
     };
 
     saveCustomerData(data);
