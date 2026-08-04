@@ -4,13 +4,14 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Variation } from "@/components/ProductModal";
 
 export interface CartItem {
-  id: string; // unique cart item id
+  id: string;
   product: Product;
   variation: Variation;
   quantity: number;
 }
 
-export interface CustomerData {
+export interface UserProfile {
+  id?: string;
   name: string;
   phone: string;
   cep: string;
@@ -20,9 +21,13 @@ export interface CustomerData {
   neighborhood: string;
   city: string;
   uf: string;
+  role: "customer" | "admin";
 }
 
-interface CartContextType {
+interface AuthContextType {
+  user: UserProfile | null;
+  login: (phone: string, name?: string, address?: Partial<UserProfile>) => void;
+  logout: () => void;
   items: CartItem[];
   addItem: (product: Product, variation: Variation, quantity?: number) => void;
   removeItem: (cartItemId: string) => void;
@@ -32,11 +37,12 @@ interface CartContextType {
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  customerData: CustomerData | null;
-  saveCustomerData: (data: CustomerData) => void;
 }
 
-const defaultContext: CartContextType = {
+const defaultContext: AuthContextType = {
+  user: null,
+  login: () => {},
+  logout: () => {},
   items: [],
   addItem: () => {},
   removeItem: () => {},
@@ -46,46 +52,70 @@ const defaultContext: CartContextType = {
   totalPrice: 0,
   isCartOpen: false,
   setIsCartOpen: () => {},
-  customerData: null,
-  saveCustomerData: () => {},
 };
 
-const CartContext = createContext<CartContextType>(defaultContext);
+const CartContext = createContext<AuthContextType>(defaultContext);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Carregar do localStorage
   useEffect(() => {
     try {
-      const savedCart = localStorage.getItem("nyatelie_cart");
-      if (savedCart) setItems(JSON.parse(savedCart));
+      const savedUser = localStorage.getItem("nyatelie_user");
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
 
-      const savedCustomer = localStorage.getItem("nyatelie_customer");
-      if (savedCustomer) setCustomerData(JSON.parse(savedCustomer));
+      const savedCart = localStorage.getItem("nyatelie_cart");
+      if (savedCart) {
+        setItems(JSON.parse(savedCart));
+      }
     } catch {
-      // Ignore storage errors
+      // Ignore
+    } finally {
+      setIsInitialized(true);
     }
   }, []);
 
-  // Salvar alterações de carrinho
   useEffect(() => {
-    try {
-      localStorage.setItem("nyatelie_cart", JSON.stringify(items));
-    } catch {
-      // Ignore storage errors
+    if (isInitialized) {
+      if (user) {
+        localStorage.setItem("nyatelie_user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("nyatelie_user");
+      }
     }
-  }, [items]);
+  }, [user, isInitialized]);
 
-  const saveCustomerData = (data: CustomerData) => {
-    setCustomerData(data);
-    try {
-      localStorage.setItem("nyatelie_customer", JSON.stringify(data));
-    } catch {
-      // Ignore storage errors
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem("nyatelie_cart", JSON.stringify(items));
     }
+  }, [items, isInitialized]);
+
+  const login = (phone: string, name?: string, address?: Partial<UserProfile>) => {
+    const isAdmin = phone.replace(/\D/g, "") === "91984829252" || name?.toLowerCase().includes("admin");
+    const newUser: UserProfile = {
+      name: name || (isAdmin ? "Administrador" : "Cliente NyAtelie"),
+      phone,
+      cep: address?.cep || "",
+      street: address?.street || "",
+      number: address?.number || "",
+      complement: address?.complement || "",
+      neighborhood: address?.neighborhood || "",
+      city: address?.city || "São Miguel do Guamá",
+      uf: address?.uf || "PA",
+      role: isAdmin ? "admin" : (address?.role || "customer"),
+    };
+    setUser(newUser);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("nyatelie_user");
   };
 
   const addItem = (product: Product, variation: Variation, quantity = 1) => {
@@ -132,6 +162,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider
       value={{
+        user,
+        login,
+        logout,
         items,
         addItem,
         removeItem,
@@ -141,8 +174,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         totalPrice,
         isCartOpen,
         setIsCartOpen,
-        customerData,
-        saveCustomerData,
       }}
     >
       {children}

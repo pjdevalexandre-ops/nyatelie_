@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { Lock, MessageCircle, ShoppingBag } from "lucide-react";
+import { Lock, MessageCircle, ShoppingBag, UserCheck, LogOut } from "lucide-react";
 import { InstagramIcon } from "./InstagramIcon";
 
 interface HeaderProps {
@@ -12,13 +12,30 @@ interface HeaderProps {
 }
 
 export default function Header({ whatsappNumber = "5591984829252", isAdmin = false }: HeaderProps) {
-  const { totalItems, setIsCartOpen } = useCart();
+  const { totalItems, setIsCartOpen, user, logout } = useCart();
 
   return (
     <header className="sticky top-0 z-40 bg-[#F6FAFD]/95 backdrop-blur-md border-b border-[#CBE3F5] shadow-xs">
-      {/* Top Banner minimalista com Instagram */}
+      {/* Top Banner minimalista com Instagram e Usuário Logado */}
       <div className="bg-[#38A9E4] text-white py-1.5 px-4 text-xs font-medium tracking-wide">
-        <div className="max-w-6xl mx-auto flex items-center justify-end">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+          {user ? (
+            <div className="flex items-center gap-2 overflow-hidden">
+              <UserCheck className="w-3.5 h-3.5 text-[#E1F2FB] shrink-0" />
+              <span className="truncate font-semibold text-white">
+                Olá, {user.name.split(" ")[0]} {user.role === "admin" ? "(Admin)" : ""}
+              </span>
+              <button
+                onClick={logout}
+                className="text-[10px] bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md font-semibold transition-colors shrink-0"
+              >
+                Sair
+              </button>
+            </div>
+          ) : (
+            <span className="text-[11px] opacity-90">Ateliê Artesanal de Crochê</span>
+          )}
+
           <a
             href="https://instagram.com/nyatelie_"
             target="_blank"
@@ -82,13 +99,15 @@ export default function Header({ whatsappNumber = "5591984829252", isAdmin = fal
                 <span className="hidden sm:inline">WhatsApp</span>
               </a>
 
-              <Link
-                href="/admin"
-                className="p-2 rounded-full text-[#4A6B82] hover:text-[#38A9E4] hover:bg-[#EBF3FA] transition-colors shrink-0"
-                title="Área Administrativa"
-              >
-                <Lock className="w-4.5 h-4.5" />
-              </Link>
+              {user?.role === "admin" && (
+                <Link
+                  href="/admin/dashboard"
+                  className="p-2 rounded-full text-[#4A6B82] hover:text-[#38A9E4] hover:bg-[#EBF3FA] transition-colors shrink-0"
+                  title="Área Administrativa"
+                >
+                  <Lock className="w-4.5 h-4.5" />
+                </Link>
+              )}
             </>
           ) : (
             <Link

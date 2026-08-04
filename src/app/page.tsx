@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import ProductModal, { Product } from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
+import AuthGateModal from "@/components/AuthGateModal";
 import { CartProvider } from "@/context/CartContext";
 import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
@@ -52,6 +53,9 @@ export default function Home() {
 
   return (
     <CartProvider>
+      {/* Modal de Cadastro / Login que Bloqueia o Acesso Inicial até o Usuário Entrar */}
+      <AuthGateModal />
+
       <div className="min-h-screen flex flex-col bg-[#F6FAFD]">
         <Header whatsappNumber={settings.whatsappNumber} />
 
@@ -154,12 +158,6 @@ export default function Home() {
                 <p className="text-sm text-[#4A6B82] leading-relaxed mb-6">
                   Nossa oficina em São Miguel do Guamá está preparando peças incríveis. Acesse o painel admin para cadastrar as primeiras!
                 </p>
-                <a
-                  href="/admin"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold transition-colors shadow-sm"
-                >
-                  Acessar Painel para Cadastrar
-                </a>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
