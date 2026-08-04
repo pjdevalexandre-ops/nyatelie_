@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { isAdminAuthenticated } from "@/lib/auth";
 
 export async function POST(request: Request) {
@@ -19,19 +17,12 @@ export async function POST(request: Request) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const mimeType = file.type || "image/png";
 
-    // Se for um ambiente serverless onde salvar local não persiste permanente, retornamos a DataURL
-    // Mas criamos a opção de salvar na pasta /public/uploads
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
+    // Converter para Data URL base64 compatível 100% com ambiente Serverless (Vercel)
+    const base64Image = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-    const filePath = path.join(uploadDir, filename);
-
-    await writeFile(filePath, buffer);
-
-    const imageUrl = `/uploads/${filename}`;
-    return NextResponse.json({ url: imageUrl });
+    return NextResponse.json({ url: base64Image });
   } catch (error) {
     return NextResponse.json({ error: "Erro ao fazer upload da imagem" }, { status: 500 });
   }
