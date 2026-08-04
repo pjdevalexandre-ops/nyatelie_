@@ -7,8 +7,8 @@ import ProductCard from "@/components/ProductCard";
 import ProductModal, { Product } from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
 import AuthGateModal from "@/components/AuthGateModal";
-import { CartProvider } from "@/context/CartContext";
-import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck, Search, Star, Quote } from "lucide-react";
+import { CartProvider, useCart } from "@/context/CartContext";
+import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck, Search, Star, Quote, Send, CheckCircle2, Loader2 } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
 
 interface Settings {
@@ -17,31 +17,20 @@ interface Settings {
   heroSubtitle: string;
 }
 
-const CATEGORIES = ["Todos", "Mesa Posta", "Bolsas & Acessórios", "Decoração", "Vestuário"];
+interface Review {
+  id: string;
+  name: string;
+  city: string;
+  comment: string;
+  rating: number;
+  createdAt: string;
+}
 
-const TESTIMONIALS = [
-  {
-    name: "Cláudia Mendonça",
-    city: "Belém - PA",
-    comment: "Os sousplats em crochê que encomendei para o meu jantar de Natal ficaram simplesmente deslumbrantes! Acabamento impecável e entrega super carinhosa.",
-    rating: 5,
-  },
-  {
-    name: "Juliana Rocha",
-    city: "São Miguel do Guamá - PA",
-    comment: "A bolsa tote de crochê é maravilhosa! Muito resistente, com forro bem feito e cabe tudo. Já quero encomendar outra cor!",
-    rating: 5,
-  },
-  {
-    name: "Patrícia Alencar",
-    city: "Ananindeua - PA",
-    comment: "Atendimento nota 1000 pelo WhatsApp e as peças em crochê têm um cheirinho e um carinho únicos. Recomendaria mil vezes!",
-    rating: 5,
-  },
-];
+const CATEGORIES = ["Todos", "Mesa Posta", "Bolsas & Acessórios", "Decoração", "Vestuário"];
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [settings, setSettings] = useState<Settings>({
     whatsappNumber: "5591984829252",
     heroTitle: "Peças únicas em crochê, feitas com carinho & afeto",
@@ -50,25 +39,38 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // Estados de Busca e Filtro por Categoria
+  // Formulário de Nova Avaliação
+  const [revName, setRevName] = useState("");
+  const [revCity, setRevCity] = useState("");
+  const [revComment, setRevComment] = useState("");
+  const [revRating, setRevRating] = useState(5);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSuccessMsg, setReviewSuccessMsg] = useState("");
+
+  // Busca e Filtros
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+
+  const loadReviews = async () => {
+    try {
+      const res = await fetch("/api/reviews");
+      if (res.ok) setReviews(await res.json());
+    } catch {
+      // Ignore
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [prodRes, setRes] = await Promise.all([
+        const [prodRes, setRes, revRes] = await Promise.all([
           fetch("/api/products"),
           fetch("/api/settings"),
+          fetch("/api/reviews"),
         ]);
-        if (prodRes.ok) {
-          const prodData = await prodRes.json();
-          setProducts(prodData);
-        }
-        if (setRes.ok) {
-          const setData = await setRes.json();
-          setSettings(setData);
-        }
+        if (prodRes.ok) setProducts(await prodRes.json());
+        if (setRes.ok) setSettings(await setRes.json());
+        if (revRes.ok) setReviews(await revRes.json());
       } catch (err) {
         console.error("Erro ao carregar dados:", err);
       } finally {
@@ -78,7 +80,41 @@ export default function Home() {
     loadData();
   }, []);
 
-  // Filtragem Dinâmica por Categoria e Busca
+  const handleAddReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revName.trim() || !revComment.trim()) return;
+
+    setSubmittingReview(true);
+    setReviewSuccessMsg("");
+
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: revName.trim(),
+          city: revCity.trim() || "São Miguel do Guamá - PA",
+          comment: revComment.trim(),
+          rating: revRating,
+        }),
+      });
+
+      if (res.ok) {
+        setReviewSuccessMsg("Sua avaliação foi enviada com sucesso! Obrigada pelo carinho!");
+        setRevName("");
+        setRevCity("");
+        setRevComment("");
+        setRevRating(5);
+        loadReviews();
+        setTimeout(() => setReviewSuccessMsg(""), 6000);
+      }
+    } catch {
+      // Ignore
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === "Todos" || (product.category || "Geral") === selectedCategory;
     const matchesSearch =
@@ -95,7 +131,7 @@ export default function Home() {
         <Header whatsappNumber={settings.whatsappNumber} />
 
         <main className="flex-1">
-          {/* Hero Section Minimalista e Limpo */}
+          {/* Hero Section */}
           <section className="relative bg-[#EBF3FA] border-b border-[#CBE3F5] pt-14 pb-18 px-4 sm:px-6 overflow-hidden">
             <div className="max-w-4xl mx-auto text-center relative z-10">
               <h1 className="font-serif-craft text-4xl sm:text-5xl md:text-6xl font-bold text-[#1A364A] leading-[1.15] mb-6">
@@ -161,7 +197,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Vitrine de Produtos com Filtro de Categoria e Barra de Busca */}
+          {/* Vitrine de Produtos */}
           <section id="vitrine" className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
             <div className="text-center mb-10">
               <span className="text-xs uppercase tracking-widest text-[#38A9E4] font-bold">
@@ -175,7 +211,7 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Barra de Busca de Produtos */}
+            {/* Busca */}
             <div className="max-w-md mx-auto mb-8 relative">
               <input
                 type="text"
@@ -187,7 +223,7 @@ export default function Home() {
               <Search className="w-5 h-5 text-[#38A9E4] absolute left-4 top-3.5" />
             </div>
 
-            {/* Filtro por Categorias */}
+            {/* Categorias */}
             <div className="flex items-center justify-center gap-2 mb-10 flex-wrap">
               {CATEGORIES.map((cat) => {
                 const isSelected = selectedCategory === cat;
@@ -221,7 +257,7 @@ export default function Home() {
                   Nenhuma peça encontrada
                 </h3>
                 <p className="text-sm text-[#4A6B82] leading-relaxed mb-6">
-                  Tente alterar os termos da busca ou selecionar outra categoria.
+                  Nossa oficina está preparando novas peças. Acesse o painel admin para cadastrar ou limpe a busca.
                 </p>
                 <button
                   onClick={() => { setSearchQuery(""); setSelectedCategory("Todos"); }}
@@ -243,7 +279,7 @@ export default function Home() {
             )}
           </section>
 
-          {/* Seção de Depoimentos e Avaliações de Clientes */}
+          {/* Avaliações de Clientes & Formulário para Deixar Depoimento */}
           <section className="py-16 bg-[#EBF3FA]/70 border-t border-[#CBE3F5]">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
               <div className="text-center mb-12">
@@ -254,38 +290,129 @@ export default function Home() {
                   Avaliações dos Nossos Clientes
                 </h2>
                 <p className="text-sm text-[#4A6B82] mt-2 max-w-md mx-auto">
-                  Veja o que quem já recebeu nossas peças de crochê em casa tem a dizer:
+                  Veja o que quem já recebeu nossas peças em casa tem a dizer e deixe sua mensagem também:
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {TESTIMONIALS.map((review, idx) => (
-                  <div key={idx} className="bg-white p-6 rounded-3xl border border-[#CBE3F5] shadow-sm flex flex-col justify-between relative">
-                    <Quote className="w-8 h-8 text-[#38A9E4]/20 absolute top-4 right-4" />
-                    <div>
-                      <div className="flex items-center gap-1 text-amber-400 mb-3">
-                        {[...Array(review.rating)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-amber-400" />
-                        ))}
-                      </div>
-                      <p className="text-xs text-[#1A364A] leading-relaxed italic mb-4">
-                        "{review.comment}"
-                      </p>
-                    </div>
-
-                    <div className="pt-3 border-t border-[#CBE3F5]/60 flex items-center justify-between">
+              {/* Lista de Depoimentos Reais */}
+              {reviews.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="bg-white p-6 rounded-3xl border border-[#CBE3F5] shadow-sm flex flex-col justify-between relative">
+                      <Quote className="w-8 h-8 text-[#38A9E4]/20 absolute top-4 right-4" />
                       <div>
-                        <h4 className="font-serif-craft font-bold text-sm text-[#1A364A]">
-                          {review.name}
-                        </h4>
-                        <span className="text-[11px] text-[#4A6B82]">{review.city}</span>
+                        <div className="flex items-center gap-1 text-amber-400 mb-3">
+                          {[...Array(review.rating)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-amber-400" />
+                          ))}
+                        </div>
+                        <p className="text-xs text-[#1A364A] leading-relaxed italic mb-4">
+                          "{review.comment}"
+                        </p>
                       </div>
-                      <span className="text-[10px] font-bold text-[#38A9E4] bg-[#EBF3FA] px-2 py-0.5 rounded-full">
-                        Cliente Verificada ✓
-                      </span>
+
+                      <div className="pt-3 border-t border-[#CBE3F5]/60 flex items-center justify-between">
+                        <div>
+                          <h4 className="font-serif-craft font-bold text-sm text-[#1A364A]">
+                            {review.name}
+                          </h4>
+                          <span className="text-[11px] text-[#4A6B82]">{review.city}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#38A9E4] bg-[#EBF3FA] px-2 py-0.5 rounded-full">
+                          Cliente Verificada ✓
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Formulário para Deixar um Depoimento / Avaliação */}
+              <div className="max-w-xl mx-auto bg-white p-6 sm:p-8 rounded-3xl border-2 border-[#CBE3F5] shadow-md">
+                <h3 className="font-serif-craft text-xl font-bold text-[#1A364A] mb-1 text-center">
+                  Deixe sua Avaliação / Depoimento
+                </h3>
+                <p className="text-xs text-[#4A6B82] text-center mb-6">
+                  Seu feedback é muito importante para motivar nosso ateliê!
+                </p>
+
+                {reviewSuccessMsg && (
+                  <div className="p-4 mb-6 bg-[#4A6B52]/15 border border-[#4A6B52] text-[#4A6B52] rounded-2xl text-xs font-bold text-center flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 shrink-0" />
+                    <span>{reviewSuccessMsg}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleAddReview} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-[#1A364A] uppercase tracking-wider mb-1">
+                        Seu Nome *
+                      </label>
+                      <input
+                        type="text"
+                        value={revName}
+                        onChange={(e) => setRevName(e.target.value)}
+                        placeholder="Ex: Ana Souza"
+                        required
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-xs text-[#1A364A]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#1A364A] uppercase tracking-wider mb-1">
+                        Sua Cidade / Estado
+                      </label>
+                      <input
+                        type="text"
+                        value={revCity}
+                        onChange={(e) => setRevCity(e.target.value)}
+                        placeholder="Ex: Belém - PA"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-xs text-[#1A364A]"
+                      />
                     </div>
                   </div>
-                ))}
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1A364A] uppercase tracking-wider mb-1">
+                      Sua Nota (Estrelas)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRevRating(star)}
+                          className="p-1 text-amber-400 hover:scale-110 transition-transform"
+                        >
+                          <Star className={`w-6 h-6 ${star <= revRating ? "fill-amber-400" : "text-gray-300"}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#1A364A] uppercase tracking-wider mb-1">
+                      Seu Depoimento sobre as peças *
+                    </label>
+                    <textarea
+                      value={revComment}
+                      onChange={(e) => setRevComment(e.target.value)}
+                      placeholder="Conte para nós como foi receber e usar sua peça de crochê..."
+                      rows={3}
+                      required
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-xs text-[#1A364A]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    className="w-full py-3.5 px-4 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white font-semibold text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    Enviar Meu Depoimento
+                  </button>
+                </form>
               </div>
             </div>
           </section>
