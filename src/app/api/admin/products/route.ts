@@ -8,12 +8,15 @@ export async function GET() {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const products = await prisma.product.findMany({
-    orderBy: { position: "asc" },
-    include: { variations: true },
-  });
-
-  return NextResponse.json(products);
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { position: "asc" },
+      include: { variations: true },
+    });
+    return NextResponse.json(products);
+  } catch {
+    return NextResponse.json([]);
+  }
 }
 
 export async function POST(request: Request) {
@@ -33,19 +36,24 @@ export async function POST(request: Request) {
       );
     }
 
-    const count = await prisma.product.count();
+    let count = 0;
+    try {
+      count = await prisma.product.count();
+    } catch {
+      count = 0;
+    }
 
     const product = await prisma.product.create({
       data: {
-        name,
-        description,
-        imageUrl,
+        name: String(name).trim(),
+        description: String(description).trim(),
+        imageUrl: String(imageUrl).trim(),
         position: count + 1,
         variations: {
           create: variations.map((v: { size: string; price: number; imageUrl?: string }) => ({
-            size: v.size,
-            price: Number(v.price),
-            imageUrl: v.imageUrl || null,
+            size: String(v.size || "Tamanho Único").trim(),
+            price: Number(v.price) || 0,
+            imageUrl: v.imageUrl ? String(v.imageUrl).trim() : null,
           })),
         },
       },
@@ -54,7 +62,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: "Erro ao criar produto" }, { status: 500 });
+    console.error("Erro ao criar produto:", error);
+    return NextResponse.json({ error: "Erro interno ao salvar produto no banco de dados" }, { status: 500 });
   }
 }
 
@@ -65,7 +74,7 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const { items } = await request.json(); // Array de { id, position }
+    const { items } = await request.json();
     if (!Array.isArray(items)) {
       return NextResponse.json({ error: "Dados inválidos para reordenação" }, { status: 400 });
     }

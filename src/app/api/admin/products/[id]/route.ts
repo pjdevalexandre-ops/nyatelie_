@@ -17,17 +17,15 @@ export async function PUT(
     const data = await request.json();
     const { name, description, imageUrl, variations } = data;
 
-    // Atualiza os dados básicos do produto
     await prisma.product.update({
       where: { id },
       data: {
-        name,
-        description,
-        imageUrl,
+        name: String(name).trim(),
+        description: String(description).trim(),
+        imageUrl: String(imageUrl).trim(),
       },
     });
 
-    // Substituir as variações
     await prisma.productVariation.deleteMany({
       where: { productId: id },
     });
@@ -36,9 +34,9 @@ export async function PUT(
       await prisma.productVariation.createMany({
         data: variations.map((v: { size: string; price: number; imageUrl?: string }) => ({
           productId: id,
-          size: v.size,
-          price: Number(v.price),
-          imageUrl: v.imageUrl || null,
+          size: String(v.size || "Tamanho Único").trim(),
+          price: Number(v.price) || 0,
+          imageUrl: v.imageUrl ? String(v.imageUrl).trim() : null,
         })),
       });
     }
@@ -50,6 +48,7 @@ export async function PUT(
 
     return NextResponse.json(updatedProduct);
   } catch (error) {
+    console.error("Erro ao atualizar produto:", error);
     return NextResponse.json({ error: "Erro ao atualizar produto" }, { status: 500 });
   }
 }
