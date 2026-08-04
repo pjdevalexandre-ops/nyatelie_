@@ -14,6 +14,7 @@ export interface UserProfile {
   id?: string;
   name: string;
   phone: string;
+  password?: string;
   cep: string;
   street: string;
   number: string;
@@ -24,7 +25,6 @@ export interface UserProfile {
   role: "customer" | "admin";
 }
 
-// Alias para compatibilidade
 export type CustomerData = UserProfile;
 
 interface AuthContextType {
@@ -108,6 +108,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const newUser: UserProfile = {
       name: name || (isAdmin ? "Administrador" : "Cliente NyAtelie"),
       phone,
+      password: address?.password,
       cep: address?.cep || "",
       street: address?.street || "",
       number: address?.number || "",
