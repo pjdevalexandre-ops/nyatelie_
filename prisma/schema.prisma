@@ -1,0 +1,39 @@
+// Prisma schema for Nyatelie Crochê Artesanal
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id          String             @id @default(uuid())
+  name        String
+  description String
+  imageUrl    String
+  position    Int                @default(0)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  variations  ProductVariation[]
+}
+
+model ProductVariation {
+  id        String   @id @default(uuid())
+  productId String
+  size      String
+  price     Float
+  imageUrl  String?
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model StoreSettings {
+  id             String   @id @default("default")
+  whatsappNumber String   @default("5591999999999")
+  heroTitle      String   @default("Peças únicas em crochê, feitas com carinho & afeto")
+  heroSubtitle   String   @default("Cada ponto carrega dedicação e história. Feitas sob encomenda para transformar seu lar ou presentear quem você ama.")
+  adminPassword  String   @default("$2a$10$w8V0r9pE.g1Q9B4S1cZ2eeX7N5V0x.X1zJ4c7.N5q3G1y8Z1xJ4c7")
+  updatedAt      DateTime @updatedAt
+}

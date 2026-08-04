@@ -1,26 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-algodao: #F6FAFD;
+    --bg-creme: #EBF3FA;
+    --azul-logo: #38A9E4;
+    --azul-dark: #1E82BC;
+    --azul-soft: #7EC7F0;
+    --azul-light: #E1F2FB;
+    --musgo-light: #6B8E72;
+    --musgo: #4A6B52;
+    --mostarda: #D49B35;
+    --texto-principal: #1A364A;
+    --texto-suave: #4A6B82;
+    --borda-croche: #CBE3F5;
   }
 }
 
+/* Moldura e Acabamento Ponto de Crochê (Scalloped Pattern em Azul Celeste) */
+.crochet-border-top {
+  position: relative;
+}
+
+.crochet-border-top::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background-image: radial-gradient(circle at 10px 12px, transparent 10px, #F6FAFD 10px);
+  background-size: 20px 12px;
+  background-repeat: repeat-x;
+}
+
+.crochet-divider {
+  height: 16px;
+  background-image: radial-gradient(circle at 10px 0px, transparent 8px, #38A9E4 8px);
+  background-size: 20px 16px;
+  background-repeat: repeat-x;
+  opacity: 0.35;
+}
+
+.crochet-card-scallop {
+  position: relative;
+  background-color: #ffffff;
+  border: 2px solid var(--borda-croche);
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px -2px rgba(56, 169, 228, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.crochet-card-scallop:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -4px rgba(56, 169, 228, 0.2);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-algodao);
+  color: var(--texto-principal);
+  font-family: var(--font-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-serif-craft {
+  font-family: var(--font-fraunces), serif;
 }
