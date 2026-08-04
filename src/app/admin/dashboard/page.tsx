@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import { CartProvider } from "@/context/CartContext";
-import CartDrawer from "@/components/CartDrawer";
 import {
   Package,
   Settings as SettingsIcon,
@@ -65,7 +64,7 @@ export default function AdminDashboard() {
   const [formDescription, setFormDescription] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
   const [formVariations, setFormVariations] = useState<{ size: string; price: number; imageUrl?: string }[]>([
-    { size: "Tamanho Único", price: 0 },
+    { size: "Tamanho Único", price: 50 },
   ]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submittingProduct, setSubmittingProduct] = useState(false);
@@ -108,10 +107,10 @@ export default function AdminDashboard() {
   const showToast = (msg: string, isError = false) => {
     if (isError) {
       setErrorMessage(msg);
-      setTimeout(() => setErrorMessage(""), 4000);
+      setTimeout(() => setErrorMessage(""), 8000);
     } else {
       setSaveMessage(msg);
-      setTimeout(() => setSaveMessage(""), 4000);
+      setTimeout(() => setSaveMessage(""), 8000);
     }
   };
 
@@ -130,7 +129,7 @@ export default function AdminDashboard() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Erro no upload");
 
       if (variationIdx !== undefined) {
         const updatedVars = [...formVariations];
@@ -139,12 +138,12 @@ export default function AdminDashboard() {
       } else {
         setFormImageUrl(data.url);
       }
-      showToast("Imagem enviada com sucesso!");
+      showToast("Foto anexada com sucesso!");
     } catch (err: unknown) {
       if (err instanceof Error) {
-        showToast(err.message || "Erro no upload", true);
+        showToast(err.message || "Erro no upload da foto", true);
       } else {
-        showToast("Erro no upload", true);
+        showToast("Erro no upload da foto", true);
       }
     } finally {
       setUploadingImage(false);
@@ -177,17 +176,30 @@ export default function AdminDashboard() {
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formImageUrl) {
-      showToast("Insira a imagem principal do produto", true);
+
+    if (!formName.trim()) {
+      showToast("Preencha o nome da peça de crochê", true);
+      return;
+    }
+    if (!formDescription.trim()) {
+      showToast("Preencha a descrição da peça", true);
+      return;
+    }
+    if (!formImageUrl.trim()) {
+      showToast("Faça o upload ou insira a foto da peça", true);
       return;
     }
 
     setSubmittingProduct(true);
     const payload = {
-      name: formName,
-      description: formDescription,
-      imageUrl: formImageUrl,
-      variations: formVariations,
+      name: formName.trim(),
+      description: formDescription.trim(),
+      imageUrl: formImageUrl.trim(),
+      variations: formVariations.map((v) => ({
+        size: v.size.trim() || "Tamanho Único",
+        price: Number(v.price) || 0,
+        imageUrl: v.imageUrl || undefined,
+      })),
     };
 
     try {
@@ -202,16 +214,20 @@ export default function AdminDashboard() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Erro ao salvar produto");
+      const data = await res.json();
 
-      showToast(editingProduct ? "Produto atualizado!" : "Novo produto cadastrado!");
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao salvar peça no servidor");
+      }
+
+      showToast(editingProduct ? "✨ Peça atualizada na vitrine!" : "✨ Nova peça cadastrada na vitrine com sucesso!");
       setIsModalOpen(false);
       loadData();
     } catch (err: unknown) {
       if (err instanceof Error) {
-        showToast(err.message || "Erro ao salvar", true);
+        showToast(err.message || "Erro ao salvar peça", true);
       } else {
-        showToast("Erro ao salvar", true);
+        showToast("Erro ao salvar peça", true);
       }
     } finally {
       setSubmittingProduct(false);
@@ -246,7 +262,6 @@ export default function AdminDashboard() {
     updated[targetIdx] = temp;
 
     const reorderedItems = updated.map((item, i) => ({ id: item.id, position: i + 1 }));
-
     setProducts(updated);
 
     try {
@@ -255,8 +270,8 @@ export default function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items: reorderedItems }),
       });
-      showToast("Ordem atualizada!");
-    } catch (err) {
+      showToast("Ordem da vitrine atualizada!");
+    } catch {
       showToast("Erro ao reordenar", true);
       loadData();
     }
@@ -308,17 +323,28 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex flex-col bg-[#F6FAFD]">
         <Header isAdmin />
 
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        {/* Notificações Visuais de Confirmação no Topo com Maior Destaque */}
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 flex flex-col gap-2 pointer-events-none">
           {saveMessage && (
-            <div className="bg-[#4A6B52] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-bounce text-sm">
-              <CheckCircle className="w-5 h-5" />
-              <span>{saveMessage}</span>
+            <div className="pointer-events-auto bg-[#4A6B52] text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-white flex items-center justify-between gap-3 text-sm font-semibold animate-bounce">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle className="w-5 h-5 shrink-0" />
+                <span>{saveMessage}</span>
+              </div>
+              <button onClick={() => setSaveMessage("")} className="text-white/80 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
           {errorMessage && (
-            <div className="bg-[#38A9E4] text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-pulse text-sm">
-              <AlertCircle className="w-5 h-5" />
-              <span>{errorMessage}</span>
+            <div className="pointer-events-auto bg-[#C85A46] text-white px-6 py-4 rounded-2xl shadow-2xl border-2 border-white flex items-center justify-between gap-3 text-sm font-semibold animate-shake">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-5 h-5 shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+              <button onClick={() => setErrorMessage("")} className="text-white/80 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>
@@ -490,7 +516,7 @@ export default function AdminDashboard() {
                       type="text"
                       value={settings.whatsappNumber}
                       onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
-                      placeholder="Ex: 5591999999999"
+                      placeholder="Ex: 5591984829252"
                       required
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-sm text-[#1A364A]"
                     />
@@ -625,20 +651,20 @@ export default function AdminDashboard() {
 
                 <div>
                   <label className="block text-xs font-semibold text-[#1A364A] uppercase tracking-wider mb-1.5">
-                    Foto Principal (URL da imagem ou Upload)
+                    Foto Principal da Peça
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={formImageUrl}
                       onChange={(e) => setFormImageUrl(e.target.value)}
-                      placeholder="https://... ou faça upload"
+                      placeholder="Anexe a foto pelo botão ou cole o link https://..."
                       required
                       className="flex-1 px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-sm text-[#1A364A]"
                     />
-                    <label className="px-4 py-2.5 rounded-xl bg-[#EBF3FA] hover:bg-[#CBE3F5] text-[#1A364A] text-xs font-medium cursor-pointer flex items-center gap-1.5 border border-[#CBE3F5]">
-                      <Upload className="w-4 h-4" />
-                      Upload
+                    <label className="px-4 py-2.5 rounded-xl bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold cursor-pointer flex items-center gap-1.5 shadow-xs">
+                      {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      {uploadingImage ? "Enviando..." : "Anexar Foto"}
                       <input
                         type="file"
                         accept="image/*"
@@ -650,7 +676,7 @@ export default function AdminDashboard() {
 
                   {formImageUrl && (
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden mt-2 border border-[#CBE3F5]">
-                      <Image src={formImageUrl} alt="Preview" fill className="object-cover" />
+                      <Image src={formImageUrl} alt="Preview da Foto" fill className="object-cover" />
                     </div>
                   )}
                 </div>
@@ -663,7 +689,7 @@ export default function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() =>
-                        setFormVariations([...formVariations, { size: "Novo Tamanho", price: 0 }])
+                        setFormVariations([...formVariations, { size: "Novo Tamanho", price: 50 }])
                       }
                       className="text-xs font-medium text-[#38A9E4] hover:underline flex items-center gap-1"
                     >
@@ -727,18 +753,18 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     type="submit"
-                    disabled={submittingProduct}
-                    className="px-6 py-2.5 rounded-xl bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+                    disabled={submittingProduct || uploadingImage}
+                    className="px-6 py-2.5 rounded-xl bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     {submittingProduct ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Salvando...
+                        Salvando Peça...
                       </>
                     ) : (
                       <>
                         <Save className="w-4 h-4" />
-                        Salvar Peça
+                        Salvar Peça na Vitrine
                       </>
                     )}
                   </button>
@@ -748,7 +774,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <CartDrawer whatsappNumber={settings.whatsappNumber || "5591999999999"} />
         <Footer />
       </div>
     </CartProvider>
