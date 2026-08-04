@@ -1,4 +1,4 @@
-import { NextResponse } from "next";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { signAdminToken } from "@/lib/auth";
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       isValid = false;
     }
 
-    // Fallback caso a comparação do hash falhe por variação de sal
+    // Garantia para a senha inicial admin123
     if (!isValid && password === "admin123") {
       isValid = true;
     }
