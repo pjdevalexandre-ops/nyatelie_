@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { Lock, MessageCircle, MapPin, Truck, ShoppingBag } from "lucide-react";
+import { Lock, MessageCircle, ShoppingBag } from "lucide-react";
 import { InstagramIcon } from "./InstagramIcon";
 
 interface HeaderProps {
@@ -16,32 +16,18 @@ export default function Header({ whatsappNumber = "5591999999999", isAdmin = fal
 
   return (
     <header className="sticky top-0 z-40 bg-[#F6FAFD]/95 backdrop-blur-md border-b border-[#CBE3F5] shadow-xs">
-      {/* Top Banner Informando Envio e Localização com Alinhamento Perfeito */}
-      <div className="bg-[#38A9E4] text-white py-2 px-4 text-xs font-medium tracking-wide">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 w-full sm:w-auto text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 shrink-0">
-              <MapPin className="w-3.5 h-3.5 text-[#E1F2FB] shrink-0" />
-              <span>São Miguel do Guamá - PA</span>
-            </div>
-            <span className="hidden sm:inline text-white/40">•</span>
-            <div className="inline-flex items-center gap-1.5 shrink-0">
-              <Truck className="w-3.5 h-3.5 text-[#E1F2FB] shrink-0" />
-              <span>Entregamos para todo o Brasil!</span>
-            </div>
-          </div>
-
-          <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-            <a
-              href="https://instagram.com/nyatelie_"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-[#E1F2FB] transition-colors font-semibold py-0.5 px-2.5 rounded-full bg-white/10 hover:bg-white/20 shrink-0"
-            >
-              <InstagramIcon className="w-3.5 h-3.5 text-white shrink-0" />
-              <span>@nyatelie_</span>
-            </a>
-          </div>
+      {/* Top Banner minimalista com Instagram */}
+      <div className="bg-[#38A9E4] text-white py-1.5 px-4 text-xs font-medium tracking-wide">
+        <div className="max-w-6xl mx-auto flex items-center justify-end">
+          <a
+            href="https://instagram.com/nyatelie_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 hover:text-[#E1F2FB] transition-colors font-semibold py-0.5 px-2.5 rounded-full bg-white/10 hover:bg-white/20 shrink-0"
+          >
+            <InstagramIcon className="w-3.5 h-3.5 text-white shrink-0" />
+            <span>@nyatelie_</span>
+          </a>
         </div>
       </div>
 
@@ -72,7 +58,6 @@ export default function Header({ whatsappNumber = "5591999999999", isAdmin = fal
         <nav className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {!isAdmin ? (
             <>
-              {/* Botão Carrinho */}
               <button
                 onClick={() => setIsCartOpen(true)}
                 className="relative inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-[#EBF3FA] hover:bg-[#CBE3F5] text-[#1A364A] text-xs font-semibold transition-all border border-[#CBE3F5] shadow-xs shrink-0"
@@ -87,7 +72,6 @@ export default function Header({ whatsappNumber = "5591999999999", isAdmin = fal
                 )}
               </button>
 
-              {/* Botão WhatsApp */}
               <a
                 href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Olá! Vim pelo site da NyAtelie e gostaria de tirar uma dúvida sobre as peças em crochê.")}`}
                 target="_blank"
@@ -98,7 +82,6 @@ export default function Header({ whatsappNumber = "5591999999999", isAdmin = fal
                 <span className="hidden sm:inline">WhatsApp</span>
               </a>
 
-              {/* Botão Login Admin */}
               <Link
                 href="/admin"
                 className="p-2 rounded-full text-[#4A6B82] hover:text-[#38A9E4] hover:bg-[#EBF3FA] transition-colors shrink-0"

@@ -8,7 +8,7 @@ import ProductModal, { Product } from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
 import { CartProvider } from "@/context/CartContext";
 import Image from "next/image";
-import { MessageCircle, HeartHandshake, PackageX, RefreshCw, MapPin, Truck } from "lucide-react";
+import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
 
 interface Settings {
@@ -22,7 +22,7 @@ export default function Home() {
   const [settings, setSettings] = useState<Settings>({
     whatsappNumber: "5591999999999",
     heroTitle: "Peças únicas em crochê, feitas com carinho & afeto",
-    heroSubtitle: "Cada ponto carrega dedicação e história. Peças feitas sob encomenda em São Miguel do Guamá - PA para transformar seu lar ou presentear quem você ama com carinho.",
+    heroSubtitle: "Cada ponto carrega dedicação e história. Peças feitas sob encomenda para transformar seu lar ou presentear quem você ama com carinho.",
   });
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -57,7 +57,7 @@ export default function Home() {
         <Header whatsappNumber={settings.whatsappNumber} />
 
         <main className="flex-1">
-          {/* Hero Section */}
+          {/* Hero Section Minimalista e Limpo */}
           <section className="relative bg-[#EBF3FA] border-b border-[#CBE3F5] pt-14 pb-18 px-4 sm:px-6 overflow-hidden">
             <div className="max-w-4xl mx-auto text-center relative z-10">
               {/* Logo Oficial Centralizada */}
@@ -71,18 +71,12 @@ export default function Home() {
                 />
               </div>
 
-              {/* Tag de Envio Nacional */}
-              <div className="inline-flex items-center gap-2 px-4.5 py-1.5 rounded-full bg-white text-[#38A9E4] border border-[#CBE3F5] text-xs font-bold uppercase tracking-wider mb-6 shadow-xs">
-                <MapPin className="w-4 h-4 text-[#38A9E4]" />
-                São Miguel do Guamá - PA • Entregamos em Todo o Brasil
-              </div>
-
               {/* Título Principal */}
               <h1 className="font-serif-craft text-4xl sm:text-5xl md:text-6xl font-bold text-[#1A364A] leading-[1.15] mb-6">
                 {settings.heroTitle}
               </h1>
 
-              {/* Subtítulo formatado */}
+              {/* Subtítulo */}
               <p className="text-base sm:text-lg text-[#4A6B82] max-w-2xl mx-auto leading-relaxed mb-8 font-normal">
                 {settings.heroSubtitle}
               </p>
