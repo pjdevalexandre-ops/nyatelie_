@@ -16,87 +16,95 @@ export default function Header({ whatsappNumber = "5591999999999", isAdmin = fal
 
   return (
     <header className="sticky top-0 z-40 bg-[#F6FAFD]/95 backdrop-blur-md border-b border-[#CBE3F5] shadow-xs">
-      {/* Faixa Superior com destaque em envio e Instagram oficial */}
+      {/* Top Banner Informando Envio e Localização com Alinhamento Perfeito */}
       <div className="bg-[#38A9E4] text-white py-2 px-4 text-xs font-medium tracking-wide">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5 text-center sm:text-left">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-[#E1F2FB]" />
-              São Miguel do Guamá - PA
-            </span>
-            <span className="hidden md:inline text-white/50">•</span>
-            <span className="flex items-center gap-1.5">
-              <Truck className="w-3.5 h-3.5 text-[#E1F2FB]" />
-              Entregamos para todo o Brasil!
-            </span>
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 w-full sm:w-auto text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-[#E1F2FB] shrink-0" />
+              <span>São Miguel do Guamá - PA</span>
+            </div>
+            <span className="hidden sm:inline text-white/40">•</span>
+            <div className="inline-flex items-center gap-1.5 shrink-0">
+              <Truck className="w-3.5 h-3.5 text-[#E1F2FB] shrink-0" />
+              <span>Entregamos para todo o Brasil!</span>
+            </div>
           </div>
 
-          <a
-            href="https://instagram.com/nyatelie_"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-[#E1F2FB] transition-colors font-semibold py-0.5 px-2 rounded-full bg-white/10 hover:bg-white/20"
-          >
-            <InstagramIcon className="w-3.5 h-3.5 text-white" />
-            @nyatelie_
-          </a>
+          <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+            <a
+              href="https://instagram.com/nyatelie_"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 hover:text-[#E1F2FB] transition-colors font-semibold py-0.5 px-2.5 rounded-full bg-white/10 hover:bg-white/20 shrink-0"
+            >
+              <InstagramIcon className="w-3.5 h-3.5 text-white shrink-0" />
+              <span>@nyatelie_</span>
+            </a>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-[#38A9E4] shadow-sm group-hover:scale-105 transition-transform bg-[#38A9E4]">
+      {/* Main Header Bar */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
+        <Link href="/" className="inline-flex items-center gap-3 shrink-0 group">
+          <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl overflow-hidden border-2 border-[#38A9E4] shadow-xs group-hover:scale-105 transition-transform bg-[#38A9E4] shrink-0">
             <Image
               src="/logo.png"
               alt="Logo NyAtelie"
               fill
               className="object-cover"
+              sizes="48px"
               priority
             />
           </div>
-          <div>
-            <span className="font-serif-craft text-2xl font-bold tracking-tight text-[#1A364A] group-hover:text-[#38A9E4] transition-colors">
+          <div className="flex flex-col justify-center">
+            <span className="font-serif-craft text-2xl font-bold tracking-tight text-[#1A364A] leading-tight group-hover:text-[#38A9E4] transition-colors">
               NyAtelie
             </span>
-            <span className="block text-[10px] uppercase tracking-widest text-[#4A6B82] font-semibold -mt-1">
+            <span className="text-[10px] uppercase tracking-widest text-[#4A6B82] font-bold leading-none mt-0.5">
               Crochê Artesanal
             </span>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-3">
+        {/* Action Buttons */}
+        <nav className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {!isAdmin ? (
             <>
+              {/* Botão Carrinho */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EBF3FA] hover:bg-[#CBE3F5] text-[#1A364A] text-xs font-semibold transition-all border border-[#CBE3F5] shadow-xs"
+                className="relative inline-flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-[#EBF3FA] hover:bg-[#CBE3F5] text-[#1A364A] text-xs font-semibold transition-all border border-[#CBE3F5] shadow-xs shrink-0"
                 title="Ver Meu Carrinho"
               >
-                <ShoppingBag className="w-4 h-4 text-[#38A9E4]" />
+                <ShoppingBag className="w-4 h-4 text-[#38A9E4] shrink-0" />
                 <span className="hidden sm:inline">Carrinho</span>
                 {totalItems > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-[#38A9E4] text-white text-xs flex items-center justify-center font-bold">
+                  <span className="w-5 h-5 rounded-full bg-[#38A9E4] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                     {totalItems}
                   </span>
                 )}
               </button>
 
+              {/* Botão WhatsApp */}
               <a
                 href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Olá! Vim pelo site da NyAtelie e gostaria de tirar uma dúvida sobre as peças em crochê.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4.5 py-2 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold tracking-wide transition-all shadow-sm hover:shadow"
+                className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4.5 py-2 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold tracking-wide transition-all shadow-xs shrink-0"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">WhatsApp</span>
               </a>
 
+              {/* Botão Login Admin */}
               <Link
                 href="/admin"
-                className="p-2 rounded-full text-[#4A6B82] hover:text-[#38A9E4] hover:bg-[#EBF3FA] transition-colors"
+                className="p-2 rounded-full text-[#4A6B82] hover:text-[#38A9E4] hover:bg-[#EBF3FA] transition-colors shrink-0"
                 title="Área Administrativa"
               >
-                <Lock className="w-5 h-5" />
+                <Lock className="w-4.5 h-4.5" />
               </Link>
             </>
           ) : (
