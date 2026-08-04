@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { User, Phone, Search, Loader2, Sparkles, Lock, KeyRound, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { User, Phone, Search, Loader2, Sparkles, Lock, KeyRound, ArrowLeft, CheckCircle2, MessageCircle } from "lucide-react";
 import { InstagramIcon } from "./InstagramIcon";
 
 export default function AuthGateModal() {
@@ -24,12 +24,13 @@ export default function AuthGateModal() {
   const [city, setCity] = useState("São Miguel do Guamá");
   const [uf, setUf] = useState("PA");
 
-  // Esqueceu a Senha / Resgate via SMS
+  // Esqueceu a Senha / Resgate de Código Seguro
   const [smsStep, setSmsStep] = useState<"send_phone" | "verify_code" | "new_password">("send_phone");
   const [smsCode, setSmsCode] = useState("");
-  const [generatedCode, setGeneratedCode] = useState("");
+  const [serverCode, setServerCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loadingSms, setLoadingSms] = useState(false);
+  const [whatsappDispatchUrl, setWhatsappDispatchUrl] = useState("");
 
   const [loadingCep, setLoadingCep] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -68,8 +69,8 @@ export default function AuthGateModal() {
     }
   };
 
-  // Envio de código SMS simulado com código dinâmico de 6 dígitos
-  const handleSendSmsCode = (e: React.FormEvent) => {
+  // Envio de código de verificação via API sem exibir o código na tela do usuário
+  const handleSendSmsCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
@@ -80,13 +81,35 @@ export default function AuthGateModal() {
     }
 
     setLoadingSms(true);
-    setTimeout(() => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(code);
-      setLoadingSms(false);
+
+    try {
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: phone.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao gerar código");
+
+      setServerCode(data.code);
+      setWhatsappDispatchUrl(data.whatsappUrl);
       setSmsStep("verify_code");
-      setSuccessMsg(`Código SMS enviado para ${phone}! (Código de Teste: ${code})`);
-    }, 1200);
+      setSuccessMsg("Código de segurança gerado! Envie a mensagem no WhatsApp para receber seu código.");
+      
+      // Abrir o WhatsApp para enviar o código privado
+      if (data.whatsappUrl) {
+        window.open(data.whatsappUrl, "_blank");
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setErrorMsg(err.message || "Erro ao solicitar código");
+      } else {
+        setErrorMsg("Erro ao solicitar código");
+      }
+    } finally {
+      setLoadingSms(false);
+    }
   };
 
   const handleVerifySmsCode = (e: React.FormEvent) => {
@@ -94,13 +117,13 @@ export default function AuthGateModal() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    if (smsCode.trim() !== generatedCode) {
-      setErrorMsg("Código de verificação SMS incorreto. Tente novamente.");
+    if (smsCode.trim() !== serverCode) {
+      setErrorMsg("Código de verificação incorreto. Verifique o código enviado no WhatsApp.");
       return;
     }
 
     setSmsStep("new_password");
-    setSuccessMsg("Código verificado! Crie sua nova senha abaixo.");
+    setSuccessMsg("Código de segurança verificado! Crie sua nova senha abaixo.");
   };
 
   const handleResetPassword = (e: React.FormEvent) => {
@@ -190,7 +213,7 @@ export default function AuthGateModal() {
               : mode === "login"
               ? "Entrar na sua Conta"
               : mode === "forgot"
-              ? "Recuperar Senha por SMS"
+              ? "Recuperar Senha"
               : "Acesso Administrativo"}
           </h2>
           <p className="text-xs text-[#4A6B82] mt-1">
@@ -199,7 +222,7 @@ export default function AuthGateModal() {
               : mode === "login"
               ? "Digite seu nome e senha para acessar sua conta"
               : mode === "forgot"
-              ? "Enviaremos um código SMS para confirmar seu celular"
+              ? "Enviaremos um código de verificação seguro via WhatsApp"
               : "Digite a senha de gestão para abrir o painel"}
           </p>
         </div>
@@ -251,7 +274,7 @@ export default function AuthGateModal() {
         )}
 
         {mode === "forgot" ? (
-          /* Fluxo de Esqueci Minha Senha com Envio de Código por SMS */
+          /* Fluxo de Esqueci Minha Senha com Envio Privado via WhatsApp */
           <div className="space-y-4">
             {smsStep === "send_phone" && (
               <form onSubmit={handleSendSmsCode} className="space-y-3.5">
@@ -277,23 +300,36 @@ export default function AuthGateModal() {
                   disabled={loadingSms}
                   className="w-full py-3.5 px-4 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white font-semibold text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loadingSms ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                  Enviar Código SMS de Confirmação
+                  {loadingSms ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
+                  Receber Código Privado no WhatsApp
                 </button>
               </form>
             )}
 
             {smsStep === "verify_code" && (
               <form onSubmit={handleVerifySmsCode} className="space-y-3.5">
+                {whatsappDispatchUrl && (
+                  <div className="text-center mb-2">
+                    <a
+                      href={whatsappDispatchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs text-[#38A9E4] hover:underline font-bold"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Reabrir WhatsApp para ver o Código
+                    </a>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-bold text-[#1A364A] uppercase tracking-wider mb-1">
-                    Código SMS de 6 dígitos *
+                    Digite o Código de 6 dígitos recebido *
                   </label>
                   <input
                     type="text"
                     value={smsCode}
                     onChange={(e) => setSmsCode(e.target.value)}
-                    placeholder="Digite os 6 dígitos recebidos"
+                    placeholder="Ex: 849201"
                     required
                     className="w-full px-3.5 py-2.5 rounded-xl border border-[#CBE3F5] bg-[#F6FAFD] text-sm text-[#1A364A] text-center font-mono font-bold tracking-widest"
                   />
@@ -303,7 +339,7 @@ export default function AuthGateModal() {
                   type="submit"
                   className="w-full py-3.5 px-4 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white font-semibold text-xs tracking-wide transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                  Validar Código SMS
+                  Validar Código de Segurança
                 </button>
               </form>
             )}
