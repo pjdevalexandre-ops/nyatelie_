@@ -7,7 +7,6 @@ import ProductCard from "@/components/ProductCard";
 import ProductModal, { Product } from "@/components/ProductModal";
 import CartDrawer from "@/components/CartDrawer";
 import { CartProvider } from "@/context/CartContext";
-import Image from "next/image";
 import { MessageCircle, HeartHandshake, PackageX, RefreshCw, Truck } from "lucide-react";
 import { InstagramIcon } from "@/components/InstagramIcon";
 
@@ -20,7 +19,7 @@ interface Settings {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [settings, setSettings] = useState<Settings>({
-    whatsappNumber: "5591999999999",
+    whatsappNumber: "5591984829252",
     heroTitle: "Peças únicas em crochê, feitas com carinho & afeto",
     heroSubtitle: "Cada ponto carrega dedicação e história. Peças feitas sob encomenda para transformar seu lar ou presentear quem você ama com carinho.",
   });
@@ -60,17 +59,6 @@ export default function Home() {
           {/* Hero Section Minimalista e Limpo */}
           <section className="relative bg-[#EBF3FA] border-b border-[#CBE3F5] pt-14 pb-18 px-4 sm:px-6 overflow-hidden">
             <div className="max-w-4xl mx-auto text-center relative z-10">
-              {/* Logo Oficial Centralizada */}
-              <div className="relative w-28 h-28 sm:w-34 sm:h-34 mx-auto mb-6 rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-[#38A9E4] transform hover:scale-105 transition-transform">
-                <Image
-                  src="/logo.png"
-                  alt="Logo NyAtelie"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-
               {/* Título Principal */}
               <h1 className="font-serif-craft text-4xl sm:text-5xl md:text-6xl font-bold text-[#1A364A] leading-[1.15] mb-6">
                 {settings.heroTitle}
