@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { Lock, MessageCircle, ShoppingBag, UserCheck, LogOut } from "lucide-react";
+import { Lock, MessageCircle, ShoppingBag, UserCheck } from "lucide-react";
 import { InstagramIcon } from "./InstagramIcon";
 
 interface HeaderProps {
@@ -54,7 +54,7 @@ export default function Header({ whatsappNumber = "5591984829252", isAdmin = fal
           <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl overflow-hidden border-2 border-[#38A9E4] shadow-xs group-hover:scale-105 transition-transform bg-[#38A9E4] shrink-0">
             <Image
               src="/logo.png"
-              alt="Logo NyAtelie"
+              alt="Logo NyAteliê"
               fill
               className="object-cover"
               sizes="48px"
@@ -63,7 +63,7 @@ export default function Header({ whatsappNumber = "5591984829252", isAdmin = fal
           </div>
           <div className="flex flex-col justify-center">
             <span className="font-serif-craft text-2xl font-bold tracking-tight text-[#1A364A] leading-tight group-hover:text-[#38A9E4] transition-colors">
-              NyAtelie
+              NyAteliê
             </span>
             <span className="text-[10px] uppercase tracking-widest text-[#4A6B82] font-bold leading-none mt-0.5">
               Crochê Artesanal
@@ -90,7 +90,7 @@ export default function Header({ whatsappNumber = "5591984829252", isAdmin = fal
               </button>
 
               <a
-                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Olá! Vim pelo site da NyAtelie e gostaria de tirar uma dúvida sobre as peças em crochê.")}`}
+                href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Olá! Vim pelo site da NyAteliê e gostaria de tirar uma dúvida sobre as peças em crochê.")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-3.5 sm:px-4.5 py-2 rounded-full bg-[#38A9E4] hover:bg-[#1E82BC] text-white text-xs font-semibold tracking-wide transition-all shadow-xs shrink-0"
